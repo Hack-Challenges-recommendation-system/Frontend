@@ -1,8 +1,6 @@
 # frontend
 
-The Angular web app of the recommendation system.
-
-**Status:** empty repository; nothing is implemented yet.
+The Angular web app of the recommendation system: sign-in, onboarding, recommendations, search, material page and profile.
 
 ## Project
 
@@ -43,6 +41,21 @@ Every commit follows [Conventional Commits](https://www.conventionalcommits.org/
 - **Description:** English, past tense, e.g. `fix(cookie): logout cookie name was fixed`.
 - **Breaking change:** `!` after the type or scope, plus a `BREAKING CHANGE:` footer saying what callers must change.
 - One logical change per commit. Commit to `develop`; `main` receives merges from `develop`.
+
+## Stack and layout
+
+- Angular 22 with standalone components, signals and zoneless change detection; TypeScript 6; Vitest 5 through `ng test`. SCSS.
+- `src/app/core/`: typed API models (`api.models.ts`), Russian labels (`labels.ts`), services for auth, profile, catalog, events and recommendations, the auth interceptor and the route guards.
+- `src/app/pages/`: one lazy-loaded component per route. `src/app/shared/`: `MaterialCard` and `ProfileForm`. `src/app/layout/shell.ts`: top bar and bottom bar.
+- Templates are inline. Styles are global in `src/styles.scss`, because component styles have a 4 kB budget; add new classes there and reuse the tokens.
+- New code follows the Angular style guide used so far: `inject()`, `input()` and `output()`, `@if` and `@for`, file names without `.component`.
+
+## Commands
+
+- `npm ci`, then `npm start` serves `http://localhost:4200` and proxies `/api` to the gateway on `http://localhost:8080` (`proxy.conf.json`).
+- `npx ng test --watch=false` runs the tests; `npm run build` writes `dist/frontend/browser`.
+- `Dockerfile` builds the app and serves it with nginx on port 80. nginx proxies `/api` to `API_GATEWAY_URL` (default `http://api-gateway:8080`), so the browser talks to one origin and needs no CORS.
+- CI: `.github/workflows/ci-cd.yml` tests and builds every push and pull request, pushes the image to Docker Hub from `main`, and deploys on a manual run.
 
 ## Look and feel
 
@@ -87,3 +100,4 @@ All calls go through api-gateway under `/api/v1`.
 - **Onboarding:** `GET` and `PUT /profiles/me`. `businessStage` is one of `IDEA`, `LAUNCH`, `GROWTH`, `SCALING`; `experience` is one of `NONE`, `BEGINNER`, `EXPERIENCED`; `goal` is free text up to 500 characters. Every answer except the nickname is optional.
 - **Catalog:** `GET /materials/{id}`, `GET /materials/search?q=`.
 - **Events:** `POST /events` with `{events: [...]}`. Send `IMPRESSION` when a recommendation is shown, `CLICK` when it's opened, `START`, `COMPLETE`, `LIKE` and `DISLIKE`. For items of a list of recommendations, include `recommendationId`, `variant` and `position`.
+- **Recommendations:** `GET /recommendations/me` returns `{recommendationId, variant, engine, clarifyingQuestion, items: [{material, reason, nextStep, position}]}`. recommendation-service must answer in this shape. When it can't answer (network error, 404 or 5xx), `RecommendationService` builds the same shape from catalog search on the profile goal and sets `engine: baseline`.
