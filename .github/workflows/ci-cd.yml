@@ -22,7 +22,7 @@ permissions:
 
 env:
   SERVICE: frontend
-  IMAGE: ${{ vars.DOCKERHUB_USER }}/recommendation-system-frontend
+  IMAGE: ${{ vars.DOCKERHUB_USER }}/hackathon-recommendation-system-frontend
 
 jobs:
   test:
