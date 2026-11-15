@@ -1,9 +1,9 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { EventType, Material } from '../core/api.models';
+import { EventType, Material, Reaction, UserEvent } from '../core/api.models';
 import { CatalogService } from '../core/catalog.service';
 import { EventsService } from '../core/events.service';
-import { durationLabel, formatLabel, levelLabel } from '../core/labels';
+import { accessLabel, durationLabel, formatLabel, levelLabel } from '../core/labels';
 
 /**
  * One material. The query parameters (rid, variant, pos, surface) come from the list that led here,
@@ -27,14 +27,14 @@ import { durationLabel, formatLabel, levelLabel } from '../core/labels';
             @if (m.level) {
               <span class="muted">· {{ level(m.level) }}</span>
             }
-            @if (m.paid) {
-              <span class="badge badge-paid">Платный</span>
+            @if (access(m); as label) {
+              <span class="badge badge-paid">{{ label }}</span>
             }
           </div>
           <h1 class="material-heading">{{ m.title }}</h1>
           @if (m.paid) {
             <div class="notice">
-              <strong>Платный материал.</strong>
+              <strong>{{ m.access === 'SUBSCRIPTION' ? 'Материал по подписке.' : 'Платный материал.' }}</strong>
               @if (m.summary) {
                 {{ m.summary }}
               }
@@ -65,6 +65,9 @@ import { durationLabel, formatLabel, levelLabel } from '../core/labels';
               Нет
             </button>
           </div>
+          @if (rating()) {
+            <p class="muted" role="status">Спасибо! Подборка на главной учтёт вашу оценку.</p>
+          }
         </article>
       } @else if (notFound()) {
         <p class="notice">Материал не найден.</p>
@@ -87,11 +90,13 @@ export class MaterialPage implements OnInit {
   protected readonly material = signal<Material | null>(null);
   protected readonly notFound = signal(false);
   protected readonly completed = signal(false);
-  protected readonly rating = signal<'LIKE' | 'DISLIKE' | null>(null);
+  /** The latest rating of this material in the session, here or on a card of the list. */
+  protected readonly rating = computed<Reaction | null>(() => this.events.reactions()[this.id()] ?? null);
 
   protected readonly format = formatLabel;
   protected readonly duration = durationLabel;
   protected readonly level = levelLabel;
+  protected readonly access = accessLabel;
 
   ngOnInit(): void {
     this.catalog.get(this.id()).subscribe({
@@ -105,27 +110,28 @@ export class MaterialPage implements OnInit {
     this.track('COMPLETE');
   }
 
-  protected rate(rating: 'LIKE' | 'DISLIKE'): void {
+  protected rate(rating: Reaction): void {
     if (this.rating() === rating) {
       return;
     }
 
-    this.rating.set(rating);
-    this.track(rating);
+    this.events.react({ ...this.event(rating), type: rating }).subscribe();
   }
 
   protected track(type: EventType): void {
+    this.events.track([this.event(type)]);
+  }
+
+  private event(type: EventType): UserEvent {
     const position = this.pos();
 
-    this.events.track([
-      {
-        type,
-        materialId: this.id(),
-        recommendationId: this.rid() ?? null,
-        variant: this.variant() ?? null,
-        position: position === undefined || Number.isNaN(Number(position)) ? null : Number(position),
-        surface: this.surface() ?? 'material',
-      },
-    ]);
+    return {
+      type,
+      materialId: this.id(),
+      recommendationId: this.rid() ?? null,
+      variant: this.variant() ?? null,
+      position: position === undefined || Number.isNaN(Number(position)) ? null : Number(position),
+      surface: this.surface() ?? 'material',
+    };
   }
 }

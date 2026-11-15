@@ -25,7 +25,13 @@ export interface ProfileUpdate {
   preferredFormats: string[];
 }
 
-/** For a paid material `summary` is only a short benefit and `url` is the provided link. */
+/** `SUBSCRIPTION`: part of a subscription; `PURCHASE`: bought separately. */
+export type Access = 'FREE' | 'SUBSCRIPTION' | 'PURCHASE';
+
+/**
+ * For a paid material `summary` is only a short benefit and `url` is the provided link.
+ * `paid` is true for every material that isn't free; without `access`, a paid material is bought separately.
+ */
 export interface Material {
   id: string;
   title: string;
@@ -37,6 +43,7 @@ export interface Material {
   businessStages: string[];
   spheres: string[];
   paid: boolean;
+  access?: Access;
   url: string;
 }
 
@@ -55,6 +62,8 @@ export interface MaterialPage {
 
 export type EventType = 'IMPRESSION' | 'CLICK' | 'START' | 'COMPLETE' | 'LIKE' | 'DISLIKE';
 
+export type Reaction = 'LIKE' | 'DISLIKE';
+
 export interface UserEvent {
   type: EventType;
   materialId: string;
@@ -71,11 +80,15 @@ export interface RecommendationItem {
   position: number;
 }
 
-/** `engine` is `baseline` when the list comes from topic matching instead of the LLM. */
+/**
+ * `engine` is `baseline` when the list comes from topic matching instead of the LLM.
+ * `orderExplanation` tells why the items go in this order: what to start with and what comes next.
+ */
 export interface RecommendationList {
   recommendationId: string;
   variant: string;
   engine: 'llm' | 'baseline';
   clarifyingQuestion: string | null;
+  orderExplanation?: string | null;
   items: RecommendationItem[];
 }

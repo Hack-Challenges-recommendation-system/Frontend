@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { catchError, map, Observable, of, switchMap, throwError } from 'rxjs';
 import { Material, RecommendationList } from './api.models';
 import { CatalogService } from './catalog.service';
+import { nextStepFor } from './labels';
 import { ProfileService } from './profile.service';
 
 /** Statuses that mean "recommendation-service can't answer", not "the request was wrong". */
@@ -44,10 +45,11 @@ export class RecommendationService {
         variant: 'baseline',
         engine: 'baseline' as const,
         clarifyingQuestion: found.length === 0 ? 'Опишите задачу подробнее, чтобы подбор был точнее.' : null,
+        orderExplanation: null,
         items: found.map((material, position) => ({
           material,
           reason: goal ? 'Совпадает с темой вашей задачи' : 'Подходит вашему этапу бизнеса',
-          nextStep: null,
+          nextStep: nextStepFor(material.format),
           position,
         })),
       })),

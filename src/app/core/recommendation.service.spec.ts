@@ -54,6 +54,7 @@ describe('RecommendationService', () => {
     expect(received?.engine).toBe('baseline');
     expect(received?.items.map((item) => item.material.id)).toEqual(['m-1']);
     expect(received?.items[0].reason).toBe('Совпадает с темой вашей задачи');
+    expect(received?.items[0].nextStep).toBe('Посмотрите видео и запишите первый шаг для своего бизнеса');
     expect(received?.clarifyingQuestion).toBeNull();
   });
 

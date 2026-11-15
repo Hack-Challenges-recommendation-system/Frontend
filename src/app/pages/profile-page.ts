@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProfileUpdate } from '../core/api.models';
 import { AuthService } from '../core/auth.service';
+import { EventsService } from '../core/events.service';
 import { ProfileService } from '../core/profile.service';
 import { ProfileForm } from '../shared/profile-form';
 
@@ -33,6 +34,7 @@ import { ProfileForm } from '../shared/profile-form';
 export class ProfilePage {
   protected readonly profiles = inject(ProfileService);
   private readonly auth = inject(AuthService);
+  private readonly events = inject(EventsService);
   private readonly router = inject(Router);
   protected readonly status = signal<string | null>(null);
 
@@ -53,6 +55,7 @@ export class ProfilePage {
   protected logout(): void {
     this.auth.logout().subscribe(() => {
       this.profiles.clear();
+      this.events.clear();
       void this.router.navigateByUrl('/login');
     });
   }
