@@ -187,7 +187,8 @@ a {
   border: 1px solid var(--gray-300);
   background: var(--white);
   font: inherit;
-  color: inherit;
+  // Not inherit: the background is always white, and inside .hero the inherited color is white too
+  color: var(--black);
   transition:
     border-color var(--ease),
     box-shadow var(--ease);
