@@ -46,8 +46,10 @@ The Angular web app of the recommendation system: sign-in, onboarding, recommend
 
 ## Product rules
 
-- Every recommendation shows why it was picked and what to do next.
-- Paid materials show only their short benefit and the provided link.
+- Every recommendation shows why it was picked and what to do next, and its place in the order; the list shows `orderExplanation` above the cards.
+- Onboarding is short and optional: «Пропустить» saves the answers as they are, which marks onboarding as done, and the home page then shows a starter selection.
+- Every card of the list can be rated «Полезно» or «Не подходит». The rating is stored first (`EventsService.react` waits for metric-service), then the list is asked for again; materials new to it are marked «Новое», and a status line says what changed. The latest rating of each material in the session lives in `EventsService.reactions`, shared with the material page.
+- Paid materials show only their short benefit and the provided link. `access` tells «По подписке» (`SUBSCRIPTION`) from «Платный» (`PURCHASE`); without it, `paid` means «Платный».
 - When recommendation-service answers with `engine: baseline`, show a quiet note that AI recommendations are unavailable right now.
 - No pop-ups or push notifications; recommendations live on the page.
 
@@ -62,4 +64,4 @@ All calls go through api-gateway under `/api/v1`.
 - **Onboarding:** `GET` and `PUT /profile/me`. `businessStage` is one of `IDEA`, `LAUNCH`, `GROWTH`, `SCALING`; `experience` is one of `NONE`, `BEGINNER`, `EXPERIENCED`; `goal` is free text up to 500 characters. Every answer except the nickname is optional.
 - **Catalog:** `GET /materials/{id}`, `GET /materials/search?q=`.
 - **Events:** `POST /events` with `{events: [...]}`. Send `IMPRESSION` when a recommendation is shown, `CLICK` when it's opened, `START`, `COMPLETE`, `LIKE` and `DISLIKE`. For items of a list of recommendations, include `recommendationId`, `variant` and `position`.
-- **Recommendations:** `GET /recommendations/me` returns `{recommendationId, variant, engine, clarifyingQuestion, items: [{material, reason, nextStep, position}]}`. recommendation-service must answer in this shape. When it can't answer (network error, 404 or 5xx), `RecommendationService` builds the same shape from catalog search on the profile goal and sets `engine: baseline`.
+- **Recommendations:** `GET /recommendations/me` returns `{recommendationId, variant, engine, clarifyingQuestion, orderExplanation, items: [{material, reason, nextStep, position}]}`; a material carries `paid` and `access`. recommendation-service must answer in this shape. When it can't answer (network error, 404 or 5xx), `RecommendationService` builds the same shape from catalog search on the profile goal, with a next step from the format, and sets `engine: baseline`.
