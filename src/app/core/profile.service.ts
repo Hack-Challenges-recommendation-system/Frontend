@@ -15,7 +15,7 @@ export class ProfileService {
    * A 404 is therefore retried a few times with a growing pause.
    */
   load(): Observable<Profile> {
-    return this.http.get<Profile>('/api/v1/profiles/me').pipe(
+    return this.http.get<Profile>('/api/v1/profile/me').pipe(
       retry({
         count: 5,
         delay: (error: unknown, attempt) =>
@@ -26,7 +26,7 @@ export class ProfileService {
   }
 
   save(update: ProfileUpdate): Observable<Profile> {
-    return this.http.put<Profile>('/api/v1/profiles/me', update).pipe(tap((profile) => this.current.set(profile)));
+    return this.http.put<Profile>('/api/v1/profile/me', update).pipe(tap((profile) => this.current.set(profile)));
   }
 
   clear(): void {

@@ -59,7 +59,7 @@ All calls go through api-gateway under `/api/v1`.
 - **Login:** `POST /auth/login` `{email, password}` answers 204 and sets the HttpOnly `jwtRefreshToken` cookie. Then `POST /auth/refresh` returns the access token as plain text. Keep it in memory and send it as `Authorization: Bearer <token>`.
 - The access token lives 5 minutes. An HTTP interceptor must call `/auth/refresh` on a 401 and retry the request once.
 - **Logout:** `DELETE /auth/logout` with the bearer token.
-- **Onboarding:** `GET` and `PUT /profiles/me`. `businessStage` is one of `IDEA`, `LAUNCH`, `GROWTH`, `SCALING`; `experience` is one of `NONE`, `BEGINNER`, `EXPERIENCED`; `goal` is free text up to 500 characters. Every answer except the nickname is optional.
+- **Onboarding:** `GET` and `PUT /profile/me`. `businessStage` is one of `IDEA`, `LAUNCH`, `GROWTH`, `SCALING`; `experience` is one of `NONE`, `BEGINNER`, `EXPERIENCED`; `goal` is free text up to 500 characters. Every answer except the nickname is optional.
 - **Catalog:** `GET /materials/{id}`, `GET /materials/search?q=`.
 - **Events:** `POST /events` with `{events: [...]}`. Send `IMPRESSION` when a recommendation is shown, `CLICK` when it's opened, `START`, `COMPLETE`, `LIKE` and `DISLIKE`. For items of a list of recommendations, include `recommendationId`, `variant` and `position`.
 - **Recommendations:** `GET /recommendations/me` returns `{recommendationId, variant, engine, clarifyingQuestion, items: [{material, reason, nextStep, position}]}`. recommendation-service must answer in this shape. When it can't answer (network error, 404 or 5xx), `RecommendationService` builds the same shape from catalog search on the profile goal and sets `engine: baseline`.

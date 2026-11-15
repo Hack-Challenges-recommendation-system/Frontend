@@ -20,7 +20,7 @@ describe('RecommendationService', () => {
 
   function withProfile(profile: Profile): void {
     TestBed.inject(ProfileService).load().subscribe();
-    backend.expectOne('/api/v1/profiles/me').flush(profile);
+    backend.expectOne('/api/v1/profile/me').flush(profile);
   }
 
   it('returns the list of recommendation-service', () => {

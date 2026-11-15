@@ -30,9 +30,9 @@ describe('authInterceptor', () => {
   it('adds the access token to API calls', () => {
     signIn();
 
-    http.get('/api/v1/profiles/me').subscribe();
+    http.get('/api/v1/profile/me').subscribe();
 
-    const request = backend.expectOne('/api/v1/profiles/me');
+    const request = backend.expectOne('/api/v1/profile/me');
     expect(request.request.headers.get('Authorization')).toBe('Bearer old-token');
     request.flush({});
   });
@@ -41,11 +41,11 @@ describe('authInterceptor', () => {
     signIn();
     let body: unknown;
 
-    http.get('/api/v1/profiles/me').subscribe((value) => (body = value));
-    backend.expectOne('/api/v1/profiles/me').flush(null, { status: 401, statusText: 'Unauthorized' });
+    http.get('/api/v1/profile/me').subscribe((value) => (body = value));
+    backend.expectOne('/api/v1/profile/me').flush(null, { status: 401, statusText: 'Unauthorized' });
     backend.expectOne('/api/v1/auth/refresh').flush('new-token');
 
-    const retried = backend.expectOne('/api/v1/profiles/me');
+    const retried = backend.expectOne('/api/v1/profile/me');
     expect(retried.request.headers.get('Authorization')).toBe('Bearer new-token');
     retried.flush({ nickname: 'founder' });
     expect(body).toEqual({ nickname: 'founder' });
@@ -55,8 +55,8 @@ describe('authInterceptor', () => {
     signIn();
     let failed = false;
 
-    http.get('/api/v1/profiles/me').subscribe({ error: () => (failed = true) });
-    backend.expectOne('/api/v1/profiles/me').flush(null, { status: 401, statusText: 'Unauthorized' });
+    http.get('/api/v1/profile/me').subscribe({ error: () => (failed = true) });
+    backend.expectOne('/api/v1/profile/me').flush(null, { status: 401, statusText: 'Unauthorized' });
     backend.expectOne('/api/v1/auth/refresh').flush(null, { status: 404, statusText: 'Not Found' });
 
     expect(failed).toBe(true);
